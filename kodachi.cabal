@@ -18,6 +18,7 @@ library
                      , Kodachi.GCode.Internal.Tokenizer
   build-depends:       base >= 4.7 && < 5
                      , attoparsec
+                     , bytestring
                      , scientific
                      , streaming-bytestring
                      , streaming-utils
