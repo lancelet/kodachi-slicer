@@ -5,6 +5,12 @@
 ;     The NIST RS274NGC Interpreter - Version 3. NISTIR 6556.
 ;     Section 3.3 - Format of a Line
 ;
+; In keeping with Kramer (2000), all whitespace outside of comments must be
+; stripped BEFORE this grammar is considered. Comments are defined completely
+; by the comment-inline and comment-eol rules. Because GCode permits whitespace
+; to occur anywhere, such pre-stripping is necessary to make the grammar
+; succinct.
+;
 ; For the format of ABNF, please consult RFC5234.
 ; ABNF summary:
 ;    a b       - a followed by b
