@@ -28,16 +28,11 @@
 gcode = *line
 
 ; Each line has:
-;  1. An optional block delete character
-;  2. An optional line number
-;  3. Any number of words or inline comments (delimited by parentheses)
-;  4. An optional end-of-line comment (preceded by a semicolon)
-;  5. An end-of-line marker
-line = [block-delete-char]
-       [line-num]
-       *(word / comment-inline)
-       [comment-eol]
-       eol
+line = [block-delete-char]       ; An optional block delete character
+       [line-num]                ; An optional line number
+       *(word / comment-inline)  ; Any number of words or inline comments
+       [comment-eol]             ; An optional end-of-line comment
+       eol                       ; An end of line marker
 
 ; An end of line marker is a carriage return or line feed or both
 eol = (CR [LF]) / (LF [CR])
