@@ -24,17 +24,17 @@
 ;    - end of line comments; preceded by a semicolon
 ;    - control words
 
-; A GCode file consists of zero or more lines
-gcode = *line
+; A GCode file consists of zero or more lines.
+; Lines in the middle of the file must be terminated by an eol character.
+; The last line in the file can optionally be terminated by an eol.
+gcode = *(line eol)
+        [(line [eol])]
 
 ; Each line has:
-line = [block-delete-char]       ; An optional block delete character
-       [line-num]                ; An optional line number
-       *(word / comment-inline)  ; Any number of words or inline comments
-       [comment-eol]             ; An optional end-of-line comment
-       eol                       ; An end of line marker
-; NB: For the very last line of the file, the eol character is suggested but
-;     NOT REQUIRED.
+line = [block-delete-char]      ; An optional block delete character
+       [line-num]               ; An optional line number
+       *(word / comment-inline) ; Any number of words or inline comments
+       [comment-eol]            ; An optional end-of-line comment
 
 ; An end of line marker is a carriage return or line feed or both
 eol = (CR [LF]) / (LF [CR])
