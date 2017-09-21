@@ -41,7 +41,7 @@ eol = (CR [LF]) / (LF [CR])
 comment-inline = "(" *comment-inline-char ")"
 ; An inline comment character is any character excluding a closing parenthesis
 comment-inline-char = HTAB / %x20-40 / %x42-7E
-; Comments can startwith a semicolon and extend for the rest of the line
+; Comments can start with a semicolon and extend for the rest of the line
 ; (NB: These comments are common in 3D printer GCode, but do not appear in
 ;  Kramer 2000.)
 comment-eol = ";" *comment-eol-char
