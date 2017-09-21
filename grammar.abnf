@@ -54,13 +54,8 @@ comment-eol = ";" *comment-eol-char
 comment-eol-char = HTAB / %x20-7E
 
 ; A word is a letter other than N followed by a real value
-word              = word-char number
-word-char         = "A" / "B" / "C" / "D" / "E" / "F" / "G" / "H" / "I" / "J" /
-                    "K" / "L" / "M" / "O" / "P" / "Q" / "R" / "S" / "T" / "U" /
-                    "V" / "W" / "X" / "Y" / "Z" /
-                    "a" / "b" / "c" / "d" / "e" / "f" / "g" / "h" / "i" / "j" /
-                    "k" / "l" / "m" / "o" / "p" / "q" / "r" / "s" / "t" / "u" /
-                    "v" / "w" / "x" / "y" / "z"
+word      = word-char number
+word-char = %x41-4D / %x4F-5A / %x61-6D / %x6F-7A
 
 ; A number consists of:
 ;  1. An optional plus or minus sign, followed by
@@ -69,13 +64,13 @@ word-char         = "A" / "B" / "C" / "D" / "E" / "F" / "G" / "H" / "I" / "J" /
 ; A number must have a digit somewhere. Consequently, a number can have a
 ; digit preceding the decimal point (lnumber) or following the decimal point
 ; (rnumber).
-number            = ["+" / "-"] (lnumber / rnumber)
-lnumber           = 1*DIGIT ["."  *DIGIT]  ; must have digit on LHS of "."
-rnumber           =          "." 1*DIGIT   ; must have digit on RHS of "."
+number  = ["+" / "-"] (lnumber / rnumber)
+lnumber = 1*DIGIT ["."  *DIGIT]  ; must have digit on LHS of "."
+rnumber =          "." 1*DIGIT   ; must have digit on RHS of "."
 
 ; A line number is the letter N followed by an integer (with no sign) between
 ; 0 and 99999 written with no more than five digits.
-line-num          = ("N" / "n") 1*5DIGIT
+line-num = ("N" / "n") 1*5DIGIT
 
 ; A block delete character is a slash.
 block-delete-char = "/"
