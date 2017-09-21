@@ -33,6 +33,8 @@ line = [block-delete-char]       ; An optional block delete character
        *(word / comment-inline)  ; Any number of words or inline comments
        [comment-eol]             ; An optional end-of-line comment
        eol                       ; An end of line marker
+; NB: For the very last line of the file, the eol character is suggested but
+;     NOT REQUIRED.
 
 ; An end of line marker is a carriage return or line feed or both
 eol = (CR [LF]) / (LF [CR])
