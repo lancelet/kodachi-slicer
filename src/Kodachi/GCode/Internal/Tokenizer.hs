@@ -1,43 +1,86 @@
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE ConstraintKinds #-}
+
 module Kodachi.GCode.Internal.Tokenizer where
 
-import           Kodachi.GCode.Internal.Types     (Token (..))
+import Data.ByteString (ByteString)
+import Data.Word (Word8)
+import Data.Word8 (_parenleft, _parenright, _semicolon, _tab, _plus, _hyphen, _period)
+import Data.Void (Void)
+import Text.Megaparsec ((<|>))
+import qualified Text.Megaparsec as P
+import qualified Text.Megaparsec.Byte as P
 
-import           Control.Applicative              (many, (<|>))
-import           Data.Attoparsec.ByteString       (Parser, choice, endOfInput,
-                                                   takeTill, takeWhile1)
-import qualified Data.Attoparsec.ByteString.Char8 as C8 (anyChar, char,
-                                                         endOfLine, isEndOfLine,
-                                                         isSpace_w8, scientific)
+data PosToken
+    = PosToken !P.SourcePos !Token
+    deriving (Eq, Show)
 
-import           Prelude                          hiding (takeWhile)
+data Token
+    = TokLetter !Word8
+    | TokDigit !Word8
+    | TokPeriod
+    | TokPlus
+    | TokMinus
+    | TokCmtInline !ByteString
+    | TokCmtEol !ByteString
+    deriving (Eq, Show)
 
+type Error = P.ParseError Word8 Void
 
+posTokensParser :: P.Parsec Void ByteString [PosToken]
+posTokensParser = parsePosTokens
 
-tokenListParser :: Parser [Token]
-tokenListParser = many tokenParser
+type Parser e s m = ( P.MonadParsec e s m
+                    , P.Token s ~ Word8
+                    , P.Tokens s ~ ByteString )
 
+-- | Parses a list of positioned tokens.
+parsePosTokens :: (Parser e s m) => m [PosToken]
+parsePosTokens = P.many parsePosToken <* P.eof
 
-tokenParser :: Parser Token
-tokenParser = choice
-              [ whitespaceParser
-              , commentParser
-              , gcodeParser
-              ]
+-- | Parses a positioned token.
+parsePosToken :: (Parser e s m) => m PosToken
+parsePosToken = PosToken <$> P.getPosition <*> (parseToken <* P.space)
 
+-- | Parses a single token.
+parseToken :: (Parser e s m) => m Token
+parseToken = letter
+         <|> digit
+         <|> period
+         <|> plus
+         <|> minus
+         <|> cmtInline
+         <|> cmtEol
   where
 
-    whitespaceParser :: Parser Token
-    whitespaceParser = Tok_WhiteSpace
-                   <$> takeWhile1 C8.isSpace_w8
+    letter = TokLetter <$> P.letterChar
+    digit  = TokDigit  <$> P.digitChar
 
-    commentParser :: Parser Token
-    commentParser = Tok_Comment
-                <$> (  C8.char ';'
-                    *> takeWhile1 (not . C8.isEndOfLine)
-                    <* (C8.endOfLine <|> endOfInput)
-                    )
+    period = P.char _period *> pure TokPeriod
+    plus   = P.char _plus   *> pure TokPlus
+    minus  = P.char _hyphen *> pure TokMinus
 
-    gcodeParser :: Parser Token
-    gcodeParser = Tok_GCode
-              <$> C8.anyChar
-              <*> C8.scientific
+    cmtInline = TokCmtInline <$> (st *> cm <* en)
+      where
+        st = P.char _parenleft
+        en = P.char _parenright
+        cm = P.takeWhileP (Just "inline comment contents") isCommentInlineChar
+
+    cmtEol = TokCmtEol <$> (st *> cm)
+      where
+        st = P.char _semicolon
+        cm = P.takeWhileP (Just "eol comment contents") isCommentEOLChar
+
+-------------------------------------------------------------------------------
+-- Character classes
+
+isCommentInlineChar :: Word8 -> Bool
+isCommentInlineChar c
+    = (c >= 32 && c <= 40)
+   || (c >= 42 && c <= 126)
+   || (c == _tab)
+
+isCommentEOLChar :: Word8 -> Bool
+isCommentEOLChar c
+    = (c >= 32 && c <= 126)
+   || (c == _tab)
